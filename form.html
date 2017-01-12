@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            Undesign the Red Line
+        </title>
+
+		
+		<meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+		
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+       <link rel="shortcut icon" href="https://www.smith.edu/sites/default/files/smithframe_favicon.ico" />
+
+		<link rel="stylesheet"  href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css" />
+		
+		<link rel="stylesheet" href="css/bootstrap-slider.min.css">
+		
+		<!--[if lte IE 8]>
+			<link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.ie.css" />
+		<![endif]-->
+     
+
+        <style type="text/css">
+            html, body, #map {
+                height: 100%;
+                padding: 0;
+                margin: 0;
+            }
+
+            #sql {
+                position: absolute;
+                top: 20px;
+                right: 292px;
+            }
+			
+			@media (max-width: 501px) {
+			.center{}
+			.center-inner{left:0;top:5%;position:absolute;width:99%;height:300pxtext-align:center;max-width:500px;max-height:500px;margin-left:1px;}
+			}
+			
+			@media (min-width: 501px) {
+			.center{left:50%;top:5%;position:absolute;}
+			.center-inner{width:500px;height:100%;margin-left:-250px;height:300px;
+			;text-align:center;max-width:500px;max-height:500px;}
+			}
+			
+			h2 {
+				font-size: 18pt;
+				font-family: Helvetica, Arial;
+				text-decoation: bold;
+				}
+			
+			ol {
+				list-style: decimal;
+				}
+
+			li {
+			display: list-item;
+			list-style-position: inside;
+				}
+				
+			textarea {
+				width:90%;
+				height:100px;
+			}
+				
+			.wordcloud span {
+				font-size: 18pt;
+				color: #3f3f3f;
+				border-bottom: 1px dotted #3f3f3f;
+				margin: 5px;
+				}
+			.wordcloud span.clicked {
+				color: #939292;
+				border-bottom: none;
+				}
+			
+            .panel {
+                background: rgba(255,255,255,0.9);
+                border-radius: 5px;
+                padding: 0;
+                border: 1px solid #999;
+                width: 100%;
+				z-index:100;
+            }
+            .slider.slider-horizontal {
+				width:90%;
+				}
+			#slidey {
+				width:700px;
+			}
+
+			 #input-map{ height: 400px;}
+			 
+
+            </style>
+           
+      
+
+			
+    <body>
+        <!-- <div id="map"></div> -->
+		<div class="center">
+			<div class="center-inner" id="form">
+				<div class="panel">
+					<h2>Where is "home" to you?</h2>
+					<p>Find it on the map below. Click on the map to place the marker, then drag the marker to move it.</p>
+
+					<div id="input-map"></div>
+					<p id="layer-control" data=0 style="text-decoration:underline;" >Show Red Line Layer</p>
+					<h2>When did you call this place home?</h2>
+					
+					<input
+						id="slidey"
+						type="text"
+						name="age"
+						range=true
+						data-provider="slider"
+						data-slider-step="1"
+						data-slider-value="1970"
+					>		
+					
+					
+					<h2>In up to three words, what are the challenges faced by your neighborhood?</h2>
+					<ol>
+						<li><span>___________</span><a class="exes" data=0 txtid=-1></a></li>
+						<li><span>___________</span><a class="exes" data=1 txtid=-1></a></li>
+						<li><span>___________</span><a class="exes" data=2 txtid=-1></a></li>
+					</ol>
+					<div class="wordcloud">
+						<span>challenge 1</span>
+						<span>challenge 2</span>
+						<span>challenge 3</span>
+						<span>challenge 4</span>
+						<span>challenge 5</span>				<span>challenge 6</span>						
+						
+						<p>other:<input class="other"><input class="add-other" type="button" value="Add to list"></p>
+					</div>
+					<h2>In up to three words, what are the assets of your neighborhood</h2>
+					<ol>
+						<li><span>___________</span><a class="exes" data=0 txtid=-1></a></li>
+						<li><span>___________</span><a class="exes" data=1 txtid=-1></a></li>
+						<li><span>___________</span><a class="exes" data=2 txtid=-1></a></li>
+					</ol>
+					<div class="wordcloud">
+						<span>asset 1</span>
+						<span>asset 2</span>
+						<span>asset 3</span>
+						<span>asset 4</span>
+						<span>asset 5</span>
+						<span>asset 6</span>						
+						<p>other:<input class="other"><input class="add-other" type="button" value="Add to list"></p>
+					</div>
+				<p>Did this exhibit cause you to see your home in a new light?</p>
+				<textarea id="long-form"></textarea>
+				<p><input type="button" value ="Submit form">&nbsp;&nbsp;&nbsp;<input type="button" value="Fill out another form"></p>
+				</div>
+			</div>
+			
+			
+
+		</div>
+        <!-- include cartodb.js library -->
+		<script src="js/jquery-2.2.2.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+        <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js" type="text/javascript"></script>
+		<script src="js/bootstrap-slider.min.js"></script>
+
+        <script type="text/javascript">
+			window.onload = function () {
+			
+			var age = $("#slidey").slider({ id:"slider1", range: true, value: [1960,1990], ticks: [1900, 1950, 2000, 2017], ticks_positions: [0, 42.735042735, 85.47008547, 100], ticks_labels: ['1900', '1950', '2000', '2017'], ticks_snap_bounds:2});
+			$('#slidey').css('width', '1000px');
+			function wordcloud() {
+				}
+			
+						
+			var map = L.map('input-map').setView([42.329066, -72.603424], 9);
+			
+			L.tileLayer('http://tile.stamen.com/toner/{z}/{x}/{y}.png',
+			{
+				attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
+				minZoom: 2
+			}).addTo(map);
+
+			var layerSource = {
+				user_name: 'digitalscholarshiplab',
+				type: 'cartodb',
+				sublayers: [{
+					sql: "SELECT * from holc_polygons",
+					cartocss: '#holc_polygons {polygon-fill: #f0f0f0; polygon-opacity: 0.5; line-color: #f5f5f5;line-width: 0.5; line-opacity: 1;} #holc_polygons[holc_grade="A"]{polygon-fill:#3eef6d;line-color:#3eef6d;} #holc_polygons[holc_grade="B"]{polygon-fill:#3932f2;line-color:#3932f2;} #holc_polygons[holc_grade="C"]{polygon-fill:#f2e532;line-color:#f2e532;} #holc_polygons[holc_grade="D"]{polygon-fill:#c61d1d;line-color:#c61d1d;}',
+					}]
+				};
+			
+			cartodb.createLayer(map, layerSource)
+				.addTo(map)
+				.done( function (layer) {
+					layer.hide();
+					$('#layer-control').click(function () {
+						if ($(this).attr('data') == 0){
+							layer.show();
+							$(this)
+								.text('Hide Red Line Layer')
+								.attr('data', 1);
+						 } else {
+							layer.hide();
+							$(this)
+								.text('Show Red Line Layer')
+								.attr('data', 0);
+						 }
+					  });		
+				});
+			
+			var inputMarker = L.marker(L.latLng(0,0), {draggable:true}).addTo(map);
+		
+			
+		    function onClick(e) {
+				inputMarker.setLatLng(e.latlng);	
+				}
+
+				map.on('click', onClick);	
+				
+
+				$('.wordcloud span').click(function () {
+					updateList($(this), $(this).parent().index('.wordcloud'), $(this).text());
+				});
+
+				$('.exes').click(function () {
+					var $list = $(this).parent().parent();	
+					var xNum = $(this).index('ol:eq(' + $list.index('ol') + ') a');
+					console.log(xNum);
+
+					
+					var listNum = $list.index('ol');
+					$list.find('span').eq(xNum).text('___________');
+					$(this).html('');					
+					$('.wordcloud:eq('+listNum+')').find('span').eq($(this).attr('txtid')).removeClass('clicked');
+					$(this).attr('txtid', -1);
+							
+				   });
+
+				function updateList($clicked, n, inText) {   
+					
+					var duplicate=false;
+										
+					var $list = $('ol:eq(' + n + ')');
+					
+					for (var i=0; i < $list.children().length; i++) {
+					
+							if 	(inText == $list.find('span').eq(i).text()) {
+								duplicate=true;
+								break;
+							}
+						}
+					if (!duplicate)	{	
+						for (var i=0; i < $list.children().length; i++) {
+							if ($list.find('span').eq(i).text() == '___________') {
+								$list.find('span').eq(i).text(inText);
+								$list.find('a').eq(i)
+									.html('&nbsp;&#x2612;')
+									.attr('txtid', $clicked.index('.wordcloud:eq(' + n + ') span'));							
+								$clicked.addClass('clicked');
+								break;
+							  }
+						  }  
+						}
+					}
+						
+			var rootUrl='https://smithgis.carto.com/api/v2/sql';
+			
+			
+				
+				$('.add-other').click(function() {
+					var listNum = $(this).parent().parent().index('.wordcloud');
+					var $textBox = $(this).parent().find('.other')
+					
+					
+					if ($textBox.val() != '') updateList($textBox, listNum, $textBox.val());
+					$textBox.val('');
+				
+				   
+				});
+			}
+			
+
+
+		  
+        </script>
+    </body>
+</html>
